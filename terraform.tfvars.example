@@ -1,0 +1,45 @@
+# Proxmox API Credentials
+PM_USER     = "root@pam"  # or terraform@pve
+PM_PASSWORD = "your-api-password-or-token"
+
+# Proxmox Node & SSH Info
+pve_api_url         = "https://192.168.1.100:8006/"
+pve_ssh_user        = "root"
+pve_ssh_private_key = "~/.ssh/id_rsa"
+
+# Image and Template details
+image_url     = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+template_id   = 9000
+template_name = "ubuntu-24.04-cloud"
+bridge        = "vmbr0"
+
+# Datastores
+iso_ds       = "local"       # Must allow Snippets (for cloud-init)
+vm_ds        = "local-lvm"   # Must allow Disk images
+content_type = "iso"
+
+# Proxmox Target Nodes
+nodes = {
+  "pve1" = {
+    vm_id = 9000
+  }
+}
+
+# Kubernetes Cluster VM Definitions
+vms = {
+  "k8s-control-1" = {
+    n_name = "pve1"
+    id     = 100
+    cpu    = 2
+    memory = 4096
+    ip4    = "dhcp"   # Or static like "192.168.1.110/24"
+    # gw4  = "192.168.1.1" # Uncomment if using static IP
+  },
+  "k8s-worker-1" = {
+    n_name = "pve1"
+    id     = 200
+    cpu    = 4
+    memory = 8192
+    ip4    = "dhcp"
+  }
+}

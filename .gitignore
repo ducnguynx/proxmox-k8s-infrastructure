@@ -1,0 +1,23 @@
+# state files
+terraform.tfstate
+terraform.tfstate.*
+*.tfstate
+*.tfstate.*
+
+# variables/secrets
+*.tfvars
+*.tfvars.json
+!example.tfvars
+
+# provider
+.terraform/
+
+# ssh keys
+tf_rsa
+tf_rsa.pub
+
+# local override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
