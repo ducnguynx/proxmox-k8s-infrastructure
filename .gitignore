@@ -21,3 +21,8 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# generated files
+
+copy_keys.sh
+ansible/inventory.ini
