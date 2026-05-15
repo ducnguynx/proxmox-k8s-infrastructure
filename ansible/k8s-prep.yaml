@@ -1,6 +1,6 @@
 ---
 - name: Prepare Proxmox VMs for Kubernetes
-  hosts: k8s_cluster
+  hosts: all
   become: yes
   tasks:
 
