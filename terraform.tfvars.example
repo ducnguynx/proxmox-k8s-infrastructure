@@ -32,14 +32,19 @@ vms = {
     id     = 100
     cpu    = 2
     memory = 4096
-    ip4    = "dhcp"   # Or static like "192.168.1.110/24"
-    # gw4  = "192.168.1.1" # Uncomment if using static IP
+    ip4 = "192.168.1.160/24" # has to be static since tf generates inventory based on this
+    gw4  = "192.168.1.1"
+    ip6  = "fd00:10:244::110/64"
+    gw6  = "fd00:10:244::1"
   },
   "k8s-worker-1" = {
     n_name = "pve1"
     id     = 200
     cpu    = 4
     memory = 8192
-    ip4    = "dhcp"
+    ip4    = "192.168.1.161/24"
+    gw4  = "192.168.1.1"
+    ip6  = "fd00:10:244::200/64"
+    gw6  = "fd00:10:244::1"
   }
 }

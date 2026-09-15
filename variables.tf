@@ -13,20 +13,20 @@ variable "PM_PASSWORD" {
 }
 
 
-variable "pve_api_url"          { type = string }         # https://pve.example.com:8006/
-variable "pve_ssh_user"         { type = string }         # "terraform"
-variable "pve_ssh_private_key"  { type = string }         # "~/.ssh/terraform_ed25519"
+variable "pve_api_url" { type = string }         # https://pve.example.com:8006/
+variable "pve_ssh_user" { type = string }        # "terraform"
+variable "pve_ssh_private_key" { type = string } # "~/.ssh/terraform_ed25519"
 
-variable "image_url"            { type = string }         # qcow2 cloud image URL
-
-
-variable "template_id"          { type = number }         # e.g. 9000
-variable "template_name"        { type = string }         # e.g. "ubuntu-24.04-cloud"
-variable "bridge"               { type = string }         # e.g. "vmbr0"
+variable "image_url" { type = string } # qcow2 cloud image URL
 
 
-variable "iso_ds" { type = string }     # e.g. "local" (must allow Import/Snippets)
-variable "vm_ds" { type = string }     # e.g. "local" (must allow Import/Snippets)
+variable "template_id" { type = number }   # e.g. 9000
+variable "template_name" { type = string } # e.g. "ubuntu-24.04-cloud"
+variable "bridge" { type = string }        # e.g. "vmbr0"
+
+
+variable "iso_ds" { type = string }       # e.g. "local" (must allow Import/Snippets)
+variable "vm_ds" { type = string }        # e.g. "local" (must allow Import/Snippets)
 variable "content_type" { type = string } # e.g. "iso" or "import" based on the dsownloaded image
 
 variable "nodes" {
@@ -38,11 +38,13 @@ variable "nodes" {
 # Map of VMs to clone
 variable "vms" {
   type = map(object({
-    n_name  = string         # The node's name that the VMs will be on
-    id      = number
-    cpu     = number
-    memory  = number         # MiB
-    ip4     = string         # "dhcp" or "192.168.1.10/24"
-    gw4     = optional(string)
+    n_name = string # The node's name that the VMs will be on
+    id     = number
+    cpu    = number
+    memory = number # MiB
+    ip4    = string # "dhcp" or "192.168.1.10/24"
+    gw4    = optional(string)
+    ip6    = optional(string) # "dhcp", "auto", or "fd00::10/64"
+    gw6    = optional(string)
   }))
 }

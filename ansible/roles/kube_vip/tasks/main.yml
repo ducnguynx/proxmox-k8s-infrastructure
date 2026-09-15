@@ -1,0 +1,16 @@
+---
+- name: Ensure Kubernetes manifests directory exists
+  ansible.builtin.file:
+    path: "{{ kube_vip_manifests_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy kube-vip static pod manifest
+  ansible.builtin.template:
+    src: kube-vip.yaml.j2
+    dest: "{{ kube_vip_manifests_dir }}/kube-vip.yaml"
+    owner: root
+    group: root
+    mode: '0644'

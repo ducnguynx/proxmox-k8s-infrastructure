@@ -1,0 +1,7 @@
+---
+- name: Join Worker Nodes to the Cluster
+  hosts: worker_nodes
+  become: true
+  roles:
+    - k8s_prep
+    - join_worker_nodes

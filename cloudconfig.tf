@@ -1,6 +1,6 @@
 # cloud-config snippets: one per VM so we can set hostname differently
 data "local_file" "ssh_public_key" {
-  filename = "./tf_rsa.pub"
+  filename = pathexpand("~/.ssh/tf_rsa.pub")
 }
 
 resource "proxmox_virtual_environment_file" "cloud_config" {

@@ -1,0 +1,6 @@
+---
+- name: Switch kube-vip manifest to use standard admin.conf so joining nodes can start it
+  ansible.builtin.replace:
+    path: "{{ kube_vip_manifests_dir }}/kube-vip.yaml"
+    regexp: 'super-admin\.conf'
+    replace: 'admin.conf'

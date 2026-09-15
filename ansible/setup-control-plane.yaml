@@ -1,0 +1,9 @@
+---
+- name: Setup kube-vip on Control Plane Nodes
+  hosts: control_nodes
+  become: true
+  roles:
+    - k8s_prep
+    - kube_vip
+    - k8s_init
+    - post_processing

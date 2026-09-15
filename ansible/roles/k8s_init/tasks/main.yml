@@ -1,0 +1,88 @@
+---
+- name: Check if Kubernetes admin.conf exists
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: k8s_init_k8s_admin_conf
+
+- name: Configure Kubernetes hostnames
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^{{ hostvars[item].ansible_host | regex_escape }}\s+'
+    line: "{{ hostvars[item].ansible_host }} {{ item }}"
+    state: present
+  loop: "{{ groups['control_nodes'] + groups['worker_nodes'] }}"
+  when: hostvars[item].ansible_host is defined
+
+- name: Render kubeadm config file
+  ansible.builtin.template:
+    src: kubeadm-config.yaml.j2
+    dest: /tmp/kubeadm-config.yaml
+    mode: '0644'
+  when:
+    - inventory_hostname == groups['control_nodes'][0]
+    - not k8s_init_k8s_admin_conf.stat.exists
+
+- name: Initialize Kubernetes Control Plane
+  ansible.builtin.command: >
+    kubeadm init
+    --config /tmp/kubeadm-config.yaml
+    --upload-certs
+  run_once: true
+  when:
+    - inventory_hostname == groups['control_nodes'][0]
+    - not k8s_init_k8s_admin_conf.stat.exists
+  args:
+    creates: /etc/kubernetes/admin.conf
+
+- name: Generate join command
+  ansible.builtin.command: kubeadm token create --print-join-command
+  register: k8s_init_join_command_raw
+  run_once: true
+  when: inventory_hostname == groups['control_nodes'][0]
+  changed_when: false
+
+- name: Upload certificates and get the key
+  ansible.builtin.command: kubeadm init phase upload-certs --upload-certs
+  register: k8s_init_cert_key_raw
+  run_once: true
+  when: inventory_hostname == groups['control_nodes'][0]
+  changed_when: false
+
+- name: Join remaining control plane nodes to the cluster
+  ansible.builtin.command: >
+    {{ hostvars[groups['control_nodes'][0]]['k8s_init_join_command_raw']['stdout'] }}
+    --control-plane
+    --certificate-key {{ hostvars[groups['control_nodes'][0]]['k8s_init_cert_key_raw']['stdout_lines'][2] }}
+  args:
+    creates: /etc/kubernetes/admin.conf
+  when:
+    - inventory_hostname != groups['control_nodes'][0]
+    - not k8s_init_k8s_admin_conf.stat.exists
+
+- name: Check if Kubernetes admin.conf exists after init or join
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: k8s_init_k8s_admin_conf_after
+
+- name: Ensure user kubeconfig directory exists
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/.kube"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  when:
+    - ansible_user is defined
+    - k8s_init_k8s_admin_conf_after.stat.exists
+
+- name: Install user kubeconfig
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/home/{{ ansible_user }}/.kube/config"
+    remote_src: true
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'
+  when:
+    - ansible_user is defined
+    - k8s_init_k8s_admin_conf_after.stat.exists
