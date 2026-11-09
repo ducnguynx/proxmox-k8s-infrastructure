@@ -1,0 +1,33 @@
+vcenter_server       = "vcenter.lab.internal"
+datacenter           = "Homelab"
+resource_pool        = "Cluster/Resources" # Default pool; for separate hosts, use esxi-01.lab.internal/Resources.
+datastore            = "esxi-01-local"     # Content library storage and default VM storage.
+network              = "VM Network"
+folder               = "Kubernetes" # Terraform creates this folder.
+content_library_name = "homelab-templates"
+# Terraform imports this OVA directly; no manual template or preparation script.
+image_url = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.ova"
+# Prefer a dated URL for reproducible deployments.
+ssh_public_key_file = "~/.ssh/tf_rsa.pub"
+gateway             = "192.168.1.1"
+dns_servers         = ["192.168.1.1"]
+
+vms = {
+  control-0 = {
+    role = "control", cpu = 2, memory = 4096, disk_gb = 40
+    ip4  = "192.168.1.170/24"
+    host = "esxi-01.lab.internal"
+    # Uses the default datastore and resource pool above.
+  }
+  worker-0 = {
+    role      = "worker", cpu = 4, memory = 8192, disk_gb = 60
+    ip4       = "192.168.1.171/24"
+    host      = "esxi-02.lab.internal"
+    datastore = "esxi-02-local"
+    # For separate hosts outside a shared cluster, also set:
+    # resource_pool = "esxi-02.lab.internal/Resources"
+  }
+}
+
+# With a shared datastore, set the global datastore to its name and omit the
+# per-VM datastore fields. Omit host to let vCenter choose within the pool.

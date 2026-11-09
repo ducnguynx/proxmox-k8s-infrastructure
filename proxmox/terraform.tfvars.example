@@ -1,6 +1,9 @@
-# Proxmox API Credentials
-PM_USER     = "root@pam"  # or terraform@pve
-PM_PASSWORD = "your-api-password-or-token"
+# Proxmox Credentials
+# Leave PM_USER, PM_PASSWORD, and pve_ssh_password unset here so Terraform
+# prompts for them interactively during `terraform plan` / `terraform apply`.
+# PM_USER          = "root@pam"
+# PM_PASSWORD      = "your-api-password-or-token"
+# pve_ssh_password = "your-root-ssh-password"
 
 # Proxmox Node & SSH Info
 pve_api_url         = "https://192.168.1.100:8006/"

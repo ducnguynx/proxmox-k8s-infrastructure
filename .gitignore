@@ -23,6 +23,12 @@ override.tf.json
 *_override.tf.json
 
 # generated files
-
+.ansible/
 copy_keys.sh
 ansible/inventory.ini
+proxmox/inventory.ini
+
+# VMware generated inventory, local bootstrap settings and saved plans
+vmware/inventory.ini
+vmware/cluster-vars.yml
+*.tfplan

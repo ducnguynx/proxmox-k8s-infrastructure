@@ -1,0 +1,15 @@
+network:
+  version: 2
+  ethernets:
+    primary:
+      match:
+        driver: vmxnet3
+      dhcp4: false
+      dhcp6: false
+      addresses: ${jsonencode([address])}
+      routes:
+        - to: default
+          via: ${jsonencode(gateway)}
+      nameservers:
+        addresses: ${jsonencode(dns_servers)}
+        search: ${jsonencode([domain])}

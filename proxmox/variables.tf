@@ -12,6 +12,12 @@ variable "PM_PASSWORD" {
   # No default value is needed
 }
 
+variable "pve_ssh_password" {
+  description = "Proxmox root SSH password (for uploading cloud-init snippets)"
+  type        = string
+  sensitive   = true
+}
+
 
 variable "pve_api_url" { type = string }         # https://pve.example.com:8006/
 variable "pve_ssh_user" { type = string }        # "terraform"

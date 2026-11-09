@@ -1,0 +1,41 @@
+#cloud-config
+hostname: ${jsonencode(hostname)}
+fqdn: ${jsonencode("${hostname}.${domain}")}
+manage_etc_hosts: true
+ssh_pwauth: false
+disable_root: true
+users:
+  - name: ${jsonencode(user)}
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${jsonencode(public_key)}
+
+bootcmd:
+  - - cloud-init-per
+    - instance
+    - configure-network
+    - sh
+    - -c
+    - |
+        set -eu
+        install -d -m 0755 /etc/netplan
+        umask 077
+        printf '%s\n' "$1" > /etc/netplan/50-cloud-init.yaml
+        printf '%s\n' 'network: {config: disabled}' > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+        netplan apply
+    - configure-network
+    - ${jsonencode(netplan)}
+
+package_update: true
+packages: [open-vm-tools, openssh-server, python3, sudo]
+growpart:
+  mode: auto
+  devices: ['/']
+  ignore_growroot_disabled: false
+resize_rootfs: true
+runcmd:
+  - [systemctl, enable, --now, open-vm-tools]
+  - [systemctl, enable, --now, ssh]

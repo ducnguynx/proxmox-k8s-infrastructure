@@ -9,14 +9,14 @@ terraform {
 }
 
 provider "proxmox" {
-  endpoint  = var.pve_api_url
+  endpoint = var.pve_api_url
   username = var.PM_USER
   password = var.PM_PASSWORD
-  insecure  = true
+  insecure = true
 
   ssh {
-    agent       = true
+    agent    = true
     username = "root"
-    password = "ducanh2376"
+    password = var.pve_ssh_password
   }
 }

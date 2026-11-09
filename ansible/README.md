@@ -29,15 +29,14 @@ The checked-in defaults are:
 | Kubernetes version | `1.30.14` | `group_vars/all.yml` |
 | API virtual IP | `192.168.1.200/32` | `group_vars/all.yml` |
 | kube-vip interface | `eth0` | `group_vars/all.yml` |
-| Pod networks | `10.255.0.0/16`, `fd00:10:255::/56` | kubeadm template |
-| Service networks | `10.36.0.0/16`, `fd00:10:36::/108` | kubeadm template |
+| Pod network | `10.255.0.0/16` | kubeadm template |
+| Service network | `10.36.0.0/16` | kubeadm template |
 | Container runtime | containerd with systemd cgroups | `k8s_prep` role |
 | Kubernetes API port | TCP `6443` | kubeadm and kube-vip |
 
-The Pod and Service networks make this a dual-stack cluster configuration.
-The node network, CNI, routers, and firewalls must support both address
-families. If the environment is IPv4-only, change both subnet values to a
-single IPv4 CIDR before the first `kubeadm init`.
+The kubeadm template creates an IPv4-only cluster. The node, Pod, and Service
+networks must not overlap. Select these subnets before the first `kubeadm init`;
+editing the template does not change networking in an existing cluster.
 
 ## What each role does
 
@@ -160,9 +159,10 @@ still needed for existing machines.
 
 ### 2. Configure Terraform VM addresses and names
 
-Copy the example variable file from the repository root:
+Copy the example variable file in your target platform directory (`proxmox/` or `vmware/`). For Proxmox:
 
 ```bash
+cd proxmox
 cp terraform.tfvars.example terraform.tfvars
 ```
 
@@ -192,8 +192,7 @@ vms = {
 }
 ```
 
-Add a routable IPv6 address and gateway to every VM when using the checked-in
-dual-stack Kubernetes subnets.
+IPv6 node addresses are not required for the checked-in IPv4-only configuration.
 
 ### 3. Review Kubernetes and kube-vip variables
 
@@ -233,16 +232,20 @@ command says otherwise.
 
 ### 1. Provision the VMs
 
+From `proxmox/` (or `vmware/`, see [`../vmware/README.md`](../vmware/README.md)):
+
 ```bash
+cd proxmox
 terraform init
 terraform fmt -check
 terraform validate
 terraform plan
 terraform apply
+cd ..
 ```
 
-Terraform writes `ansible/inventory.ini` during apply. Wait for cloud-init to
-finish installing and starting `qemu-guest-agent` before continuing.
+Terraform writes `ansible/inventory.ini` during apply (for Proxmox) or `vmware/inventory.ini` (for VMware). Wait for cloud-init to
+finish installing and starting guest tools before continuing.
 
 ### 2. Validate inventory and SSH access
 
@@ -312,10 +315,10 @@ example.
 
 Choose a CNI version compatible with the selected Kubernetes version and apply
 its official installation instructions. For the checked-in configuration it
-must support dual-stack networking and be configured for:
+should be configured for IPv4 networking with:
 
-- Pod CIDRs `10.255.0.0/16` and `fd00:10:255::/56`; and
-- Service CIDRs `10.36.0.0/16` and `fd00:10:36::/108` when the CNI needs them.
+- Pod CIDR `10.255.0.0/16`; and
+- Service CIDR `10.36.0.0/16` when the CNI needs it.
 
 For me personally, I use Cilium in VXLAN mode as the CNI
 
@@ -377,6 +380,5 @@ There are two important limits:
 
 - [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 - [Creating highly available clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)
-- [Dual-stack support with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/dual-stack-support/)
 - [Kubernetes release support](https://kubernetes.io/releases/)
 - [kube-vip static Pod installation](https://kube-vip.io/docs/installation/static/)

@@ -1,63 +1,29 @@
-# Proxmox Kubernetes Infrastructure
+# Kubernetes Homelab Infrastructure (Proxmox & VMware vSphere)
 
-This repository provisions Kubernetes virtual machines on Proxmox with
-Terraform, then bootstraps a highly available kubeadm cluster with Ansible and
-kube-vip.
+This repository provisions Kubernetes virtual machines using Terraform on either **Proxmox VE** or **VMware vCenter / ESXi**, and bootstraps a highly available `kubeadm` cluster with **Ansible** and **kube-vip**.
 
-## Why I Built This
+## Repository Structure
 
-This project is part of a larger blog series documenting the process of setting up a full Kubernetes cluster from scratch. Instead of clicking through the Proxmox GUI, I wanted to define the infrastructure declaratively. This allows the cluster to be recreated consistently, versioned alongside the rest of the project, and provides a solid foundation for zero-touch Kubernetes provisioning.
+| Directory | Purpose |
+| --- | --- |
+| [`proxmox/`](proxmox/README.md) | Terraform root for provisioning VMs on Proxmox VE (`bpg/proxmox`) |
+| [`vmware/`](vmware/README.md) | Terraform root for provisioning VMs on VMware vCenter / ESXi (`vmware/vsphere`) |
+| [`ansible/`](ansible/README.md) | Shared Ansible roles and playbooks to bootstrap `kubeadm` + `kube-vip` |
+| `diagrams/` & `figures/` | Architecture and workflow Excalidraw diagrams |
 
-## Prerequisites
+## Quick Start
 
-To run this project, you will need:
-
-1. A **Proxmox Virtual Environment** host or cluster.
-2. An **API Token** or username/password from Proxmox with appropriate privileges.
-3. **Terraform** installed on your local machine.
-4. **Ansible Core** and the `community.general` collection.
-5. An SSH key pair at `~/.ssh/tf_rsa` and `~/.ssh/tf_rsa.pub`.
-6. A local `terraform.tfvars` file containing your specific secrets and values. Copy the provided template (after you clone the repo) to get started:
-   ```bash
-   cp terraform.tfvars.example terraform.tfvars
-   ```
-
-## How to Use
-
-1. Clone the repository
-   ```bash
-   git clone https://github.com/ducnguynx/terraform-proxmox-k8s.git
-   cd terraform-proxmox-k8s
-   ```
-
-2. Generate an SSH key pair for the cluster
+1. **Generate an SSH key pair** (if you don't already have one):
    ```bash
    ssh-keygen -t rsa -b 4096 -f ~/.ssh/tf_rsa -N ""
    ```
 
-3. Initialize Terraform
-   Downloads the required providers (like `bpg/proxmox`).
-   ```bash
-   terraform init
-   ```
+2. **Provision VMs on your chosen platform**:
+   - **Proxmox VE**: Follow [`proxmox/README.md`](proxmox/README.md) (`cd proxmox && cp terraform.tfvars.example terraform.tfvars`)
+   - **VMware vSphere**: Follow [`vmware/README.md`](vmware/README.md) (`cd vmware && cp terraform.tfvars.example terraform.tfvars`)
 
-4. Review and apply the configuration
-   Provisions the virtual machines and cloud-init configurations.
-   ```bash
-   terraform fmt -check
-   terraform validate
-   terraform plan
-   terraform apply
-   ```
-
-   Use static VM addresses. Terraform generates `ansible/inventory.ini`, and a
-   VM configured with `ip4 = "dhcp"` will not produce a usable Ansible target.
-
-5. Bootstrap Kubernetes
-
-   Follow the detailed [Ansible cluster runbook](ansible/README.md). It covers
-   the reviewed role sequence, required preflight checks, kube-vip, the required
-   CNI installation step, validation, reruns, and failure recovery.
+3. **Bootstrap Kubernetes with Ansible**:
+   Follow the [Ansible cluster runbook](ansible/README.md) in `ansible/` to prepare nodes, configure `kube-vip`, initialize the control plane, install a CNI, and join worker nodes.
 
 > [!WARNING]
 > The checked-in Kubernetes `1.30.14` pin is end-of-life, no CNI is bundled,

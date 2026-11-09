@@ -58,6 +58,14 @@
     name: containerd
     state: present
 
+- name: Ensure containerd configuration directory exists
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Get default containerd configuration
   ansible.builtin.command: containerd config default
   register: k8s_prep_containerd_config_default
@@ -78,6 +86,7 @@
     set -o pipefail
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_minor_version }}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
   args:
+    executable: /bin/bash
     creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
 - name: Remove legacy Kubernetes repository definition
